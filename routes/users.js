@@ -23,17 +23,22 @@ router.post('/login', async (req, res, next) => {
     passport.authenticate('login', async (err, user, info) => {
         try {
             if (err || !user) {
-                const error = new Error('An Error occured')
-                return next(error);
+                return res.status(400).json({
+                    errors: {'global': 'Invalid Credentials'}
+                })
             }
             req.login(user, {session: false}, async (error) => {
-                if (error) return next(error);
+                if (error) return res.status(400).json({
+                    errors: {'global': 'Invalid Credentials'}
+                });
                 const body = {_id: user._id, email: user.email};
                 const token = jwt.sign({user: body}, process.env.SECRET);
                 return res.json({token});
             });
         } catch (error) {
-            return next(error);
+            return res.status(400).json({
+                errors: {'global': 'Invalid Credentials'}
+            });
         }
     })(req, res, next);
 });

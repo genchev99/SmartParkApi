@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const _ = require("lodash");
 
 const ParkingSpace = require('../models/parkingSpace');
 const Device = require('../models/device');
@@ -12,7 +11,10 @@ const Device = require('../models/device');
 router.post('/', async (req, res) => {
     let space = await new ParkingSpace({
         available: true,
-        device: '5c9634742d9679ed7dd00fac'
+        location: {
+            type: 'Point',
+            coordinates: [42.710397, 23.321969]
+        },
     })
         .save()
         .catch((err) => {
@@ -56,10 +58,10 @@ router.get("/free", async (req, res) => {
  */
 router.post("/free", async (req, res) => {
     let distance = req.body.distance;
-    if (!distance || distance <= 0) distance = 5000000000000000;
+    if (!distance || distance <= 0) distance = 5000;
     const query = ParkingSpace.find({}).populate('device');
-    query.where('device.location').near({
-        center: {coordinates: [parseFloat("41.679838"), parseFloat("23.310965")], type: 'Point'},
+    query.where('location').near({
+        center: {coordinates: [parseFloat(req.body.lat), parseFloat(req.body.long)], type: 'Point'},
         maxDistance: parseInt(distance)
     });
     //query.and([{available: true}]);

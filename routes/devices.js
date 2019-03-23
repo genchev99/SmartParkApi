@@ -24,10 +24,6 @@ router.get("/", async (req, res) => {
 
 router.post('/', async (req, res) => {
     const device = await Device.findOneAndUpdate({
-        location: {
-            type: 'Point',
-            coordinates: [41.679838, 23.310965]
-        },
         active: true,
         lastCharged: new Date()
     }, {}, {
