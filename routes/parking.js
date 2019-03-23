@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
+const _ = require("lodash");
 
 const ParkingSpace = require('../models/parkingSpace');
 const Device = require('../models/device');
@@ -11,7 +12,7 @@ const Device = require('../models/device');
 router.post('/', async (req, res) => {
     let space = await new ParkingSpace({
         available: true,
-        device: ''
+        device: '5c9634742d9679ed7dd00fac'
     })
         .save()
         .catch((err) => {
@@ -53,11 +54,68 @@ router.get("/free", async (req, res) => {
 /**
  * Returns free parking spaces near longitude and latitude within distance
  */
-router.post("/free", (req, res) => {
+router.post("/free", async (req, res) => {
     let distance = req.body.distance;
-    if (!distance) distance = 5000;
+    if (!distance || distance <= 0) distance = 5000000000000000;
     const query = ParkingSpace.find({}).populate('device');
     query.where('device.location').near({
+        center: {coordinates: [parseFloat("41.679838"), parseFloat("23.310965")], type: 'Point'},
+        maxDistance: parseInt(distance)
+    });
+    //query.and([{available: true}]);
+    query.exec((err, spaces) => {
+        if (err) console.log(err);
+        return res.json({
+            spaces: spaces
+        });
+    });
+
+    /*const query = ParkingSpace.find(
+        {
+            "device.location": {
+                "$near": {
+                    "$geometry": {
+                        "type": "Point",
+                        "coordinates": [ 2, 4 ]
+                    }
+                }
+            }
+        }
+    );
+
+    query.populate("device").exec(function(err,shapes) {
+        if (err) throw err;
+        console.log( shapes );
+    });*/
+
+    /*const devices = await ParkingSpace.find({}).populate('device').find({
+        "device.location": {
+            $near: {
+                $maxDistance: 1000,
+                $geometry: { type: 'Point', coordinates: [ 41.679838, 23.310965 ] }
+            }
+        }
+    });
+    _.forEach(devices, device => {
+        console.log(device.device.location);
+    });
+    console.log(devices);*/
+
+/*.find({
+        "device.location": {
+            $near: {
+                $maxDistance: 1000,
+                $geometry: {
+                    type: "Point",
+                    coordinates: [1, 1]
+                }
+            }
+        }
+    });*/
+    /*_.forEach(devices, device => {
+
+    })*/
+    /*query.where('device.location').near({
         center: {coordinates: [parseFloat(req.body.lat), parseFloat(req.body.long)], type: 'Point'},
         maxDistance: parseInt(distance)
     });
@@ -67,8 +125,9 @@ router.post("/free", (req, res) => {
         return res.json({
             spaces: spaces
         });
-    })
+    })*/
 
+    // res.status(200).json({});
 });
 
 

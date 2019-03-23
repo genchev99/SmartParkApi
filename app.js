@@ -46,9 +46,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 require('./auth/auth');
 
 app.use('/', indexRouter);
-app.use('/user', usersRouter);
-app.use('/parking', parkingRouter);
-app.use('/device', devicesRouter);
+app.use('/users', usersRouter);
+app.use('/parkings', parkingRouter);
+app.use('/devices', devicesRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

@@ -22,7 +22,7 @@ const DeviceSchema = new Schema({
   lastCharged : { type: Date }
 }, { timestamps: true });
 
-DeviceSchema.index({index: '2dsphere'});
+DeviceSchema.index({location: '2dsphere'});
 const DeviceModel = new mongoose.model("devices", DeviceSchema);
 
 module.exports = DeviceModel;

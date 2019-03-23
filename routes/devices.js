@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const device = require("../models/device");
+const Device = require("../models/device");
 
 const getDevices = options => {
     return new Promise(async (resolve, reject) => {
-        const devices = await device
+        const devices = await Device
             .find(options)
             .sort({updatedAt: -1})
             .catch(e => reject(e));
@@ -23,20 +23,19 @@ router.get("/", async (req, res) => {
 
 
 router.post('/', async (req, res) => {
-    const dev = await new device({
+    const device = await Device.findOneAndUpdate({
         location: {
             type: 'Point',
             coordinates: [41.679838, 23.310965]
         },
         active: true,
         lastCharged: new Date()
-    })
-        .save()
-        .catch((err) => {
-            return res.json(err);
-        });
+    }, {}, {
+        upsert: true,
+        new: true
+    });
 
-    return res.json(dev);
+    return res.json(device);
 });
 
 router.get("/active", async (req, res) => {
