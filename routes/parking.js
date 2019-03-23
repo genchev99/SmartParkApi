@@ -1,50 +1,52 @@
 const express = require('express');
 const router = express.Router();
-const ParkingSpace = require('../models/parkingSpace');
 const passport = require('passport');
+
+const ParkingSpace = require('../models/parkingSpace');
+const Device = require('../models/device');
 
 /**
  * Creates new parking space
  */
-router.post('/', (req, res) => {
-    let space = new ParkingSpace({
+router.post('/', async (req, res) => {
+    let space = await new ParkingSpace({
         available: true,
-        location: {
-            type: 'Point',
-            coordinates: [42.710397, 23.321969]
-        }
-    });
-
-    space.save(err => {
-        if (err) return err;
-        return res.send('Created successfully')
+        device: ''
     })
+        .save()
+        .catch((err) => {
+            res.json({
+                result: 'error'
+            })
+        });
+
+        return res.json({
+            result: 'success',
+            parkingSpace: space
+        })
 });
 
 
 /**
  * Returns all spaces
   */
-router.get("/", (req, res) => {
-    ParkingSpace.find({}, (err, spaces) => {
-        if (err) return err;
-        return res.json({
-            spaces: spaces
-        });
-    })
+router.get("/", async (req, res) => {
+    const spaces = await ParkingSpace.find({});
+
+    return res.json({
+        spaces: spaces
+    });
 });
 
 
 /**
  * Returns all free spaces
  */
-router.get("/free", (req, res) => {
-    ParkingSpace.find({available: true}, (err, spaces) => {
-        if (err) return err;
+router.get("/free", async (req, res) => {
+    const spaces = await ParkingSpace.find({available: true});
         return res.json({
             spaces: spaces
         });
-    })
 });
 
 
@@ -54,12 +56,12 @@ router.get("/free", (req, res) => {
 router.post("/free", (req, res) => {
     let distance = req.body.distance;
     if (!distance) distance = 5000;
-    const query = ParkingSpace.find();
-    query.where('location').near({
+    const query = ParkingSpace.find({}).populate('device');
+    query.where('device.location').near({
         center: {coordinates: [parseFloat(req.body.lat), parseFloat(req.body.long)], type: 'Point'},
-        maxDistance: distance
+        maxDistance: parseInt(distance)
     });
-    query.and([{available: true}]);
+    //query.and([{available: true}]);
     query.exec((err, spaces) => {
         if (err) console.log(err);
         return res.json({
@@ -73,13 +75,12 @@ router.post("/free", (req, res) => {
 /**
  * Return taken parking spaces
  */
-router.get("/taken", (req, res) => {
-    ParkingSpace.find({available: false}, (err, spaces) => {
-        if (err) return err;
-        return res.json({
-            spaces: spaces
-        });
-    })
+router.get("/taken", async (req, res) => {
+    const spaces = await ParkingSpace.find({available: false});
+
+    return res.json({
+        spaces: spaces
+    });
 });
 
 

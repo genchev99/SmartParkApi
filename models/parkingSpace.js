@@ -3,22 +3,22 @@ const Schema = mongoose.Schema;
 
 const ParkingSpaceSchema = new Schema({
     available: { type: Boolean },
-    device : { type: Schema.Types.ObjectId, ref: 'devices' },
-    location: {
+    device : { type: Schema.Types.ObjectId, ref: 'devices', unique: true },
+    /*location: {
         type: {
             type: String,
-            /*enum: ['Point'],
-            required: true*/
+            /!*enum: ['Point'],
+            required: true*!/
         },
         coordinates: []
-        /*
+        /!*
         coordinates: {
             type: [Number],
             required: true
         },
-        */
+        *!/
         //index: '2dsphere'  //tva moje i da trqbva???
-    }
+    }*/
 }, { timestamps: true });
 
 const ParkingSpaceModel = new mongoose.model("parkingSpace", ParkingSpaceSchema);

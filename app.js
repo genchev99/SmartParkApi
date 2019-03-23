@@ -12,6 +12,7 @@ const mongoose = require("mongoose");
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const parkingRouter = require("./routes/parking");
+const devicesRouter = require('./routes/devices');
 
 dotenv.config();
 
@@ -47,6 +48,7 @@ require('./auth/auth');
 app.use('/', indexRouter);
 app.use('/user', usersRouter);
 app.use('/parking', parkingRouter);
+app.use('/device', devicesRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
