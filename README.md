@@ -7,10 +7,10 @@ Smart Park is Rest API that feeds live information about the free parking spaces
 Use the package manager [npm](https://www.npmjs.com/) to install all dependencies.
 
 ```bash
-git clone https://github.com/genchev99/SmartParkBackend
-cd SmartParkBackend
+git clone https://github.com/genchev99/SmartParkApi
+cd SmartParkApi
 npm install
-echo "MONGO_DATABASE_URL=mongodb://localhost:27017/smartpark" > .env
+echo MONGO_DATABASE_URL=mongodb://localhost:27017/smartpark > .env
 npm start
 ```
 

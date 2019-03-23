@@ -1,14 +1,13 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const deviceSchema = new Schema({
-  _id: { type: String },
+const DeviceSchema = new Schema({
   longitude: { type: Number },
   latitude : { type: Number },
   active: { type: Boolean },
   lastCharged : { type: String }
 }, { timestamps: true });
 
-const deviceModel = new mongoose.model("devices", deviceSchema);
+const DeviceModel = new mongoose.model("devices", DeviceSchema);
 
-module.exports = deviceModel;
+module.exports = DeviceModel;

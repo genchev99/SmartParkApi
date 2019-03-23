@@ -29,7 +29,7 @@ app.use(function(req, res, next) {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-mongoose.connect('mongodb://localhost:27017/smartpark', { useNewUrlParser: true });
+mongoose.connect(process.env.MONGO_DATABASE_URL, { useNewUrlParser: true });
 mongoose.Promise = global.Promise;
 
 // view engine setup
@@ -42,8 +42,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+require('./auth/auth');
+
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/user', usersRouter);
 app.use('/parking', parkingRouter);
 
 // catch 404 and forward to error handler

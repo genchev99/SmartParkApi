@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const parkingSpaceSchema = new Schema({
+const ParkingSpaceSchema = new Schema({
     available: { type: Boolean },
     device : { type: Schema.Types.ObjectId, ref: 'device' },
     location: {
@@ -21,6 +21,6 @@ const parkingSpaceSchema = new Schema({
     }
 }, { timestamps: true });
 
-const parkingSpaceModel = new mongoose.model("parkingSpace", parkingSpaceSchema);
+const ParkingSpaceModel = new mongoose.model("parking_space", ParkingSpaceSchema);
 
-module.exports = parkingSpaceModel;
+module.exports = ParkingSpaceModel;
