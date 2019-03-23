@@ -5,8 +5,14 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const socketIO = require("socket.io");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const mongooseReplica = require("mongoose");
+const http = require("http");
+
+const ParkingSpace = require("./models/parkingSpace");
+
 
 /* Routers */
 const indexRouter = require("./routes/index");
@@ -17,6 +23,11 @@ const devicesRouter = require('./routes/devices');
 dotenv.config();
 
 const app = express();
+const socket = express();
+const port = process.env.PORT || 4444;
+const server = http.createServer(socket);
+// This creates our socket using the instance of the server
+const io = socketIO(server);
 
 /* CORS setup */
 app.use(cors());
@@ -66,4 +77,42 @@ app.use((err, req, res) => {
   res.render('error');
 });
 
-module.exports = app;
+mongooseReplica.connect("mongodb://localhost/smartpark?replicaSet=rs", { useNewUrlParser: true });
+
+const db = mongooseReplica.connection;
+
+db.on('error', console.error.bind(console, 'Connection Error:'));
+
+db.once('open', () => {
+  io.on("connection", socket => {
+    console.log("New client connected" + socket.id);
+    //console.log(socket);
+    // collection_devices.watch().on('change', change => console.log(change));
+    // Returning all initial states of data
+    socket.on("initial-data", () => {
+      ParkingSpace.find({}).then(docs => {
+        io.sockets.emit("new-data", docs);
+      });
+    });
+
+    // disconnect is fired when a client leaves the server
+    socket.on("disconnect", () => {
+      console.log("user disconnected");
+    });
+  });
+  console.log("Started");
+  app.listen(8080, () => {
+    console.log('Node server running on port 8080');
+  });
+
+  const taskCollection = db.collection('parkingspaces');
+  const changeStream = taskCollection.watch();
+
+  changeStream.on('change', (change) => {
+    console.log(change);
+  });
+
+  server.listen(port, () => console.log(`Socket server started on port ${port}`));
+});
+
+// module.exports = app;
