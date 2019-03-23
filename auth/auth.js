@@ -4,7 +4,7 @@ const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
 const dotenv = require("dotenv").config();
 
-const UserModel = require('../models/user');
+const User = require('../models/user');
 
 /**
  * Handle user registration
@@ -14,7 +14,7 @@ passport.use('signup', new localStrategy({
     passwordField: 'password'
 }, async (email, password, done) => {
     try {
-        const user = await UserModel.create({email, password});
+        const user = await User.create({email, password});
         return done(null, user);
     } catch (error) {
         done(error);
@@ -29,7 +29,7 @@ passport.use('login', new localStrategy({
     passwordField: 'password'
 }, async (email, password, done) => {
     try {
-        const user = await UserModel.findOne({email});
+        const user = await User.findOne({email});
         if (!user) {
             return done(null, false, {message: 'User not found'});
         }

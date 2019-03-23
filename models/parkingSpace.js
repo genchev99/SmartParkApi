@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const ParkingSpaceSchema = new Schema({
     available: { type: Boolean },
-    device : { type: Schema.Types.ObjectId, ref: 'device' },
+    device : { type: Schema.Types.ObjectId, ref: 'devices' },
     location: {
         type: {
             type: String,
@@ -21,6 +21,6 @@ const ParkingSpaceSchema = new Schema({
     }
 }, { timestamps: true });
 
-const ParkingSpaceModel = new mongoose.model("parking_space", ParkingSpaceSchema);
+const ParkingSpaceModel = new mongoose.model("parkingSpace", ParkingSpaceSchema);
 
 module.exports = ParkingSpaceModel;

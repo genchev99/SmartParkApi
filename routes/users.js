@@ -4,6 +4,10 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const dotenv = require("dotenv").config();
 
+const User = require('../models/user');
+const ParkingSpace = require('../models/parkingSpace');
+
+
 /* GET users listing. */
 router.get('/', function (req, res, next) {
     res.send('respond with a resource');
@@ -33,6 +37,58 @@ router.post('/login', async (req, res, next) => {
             return next(error);
         }
     })(req, res, next);
+});
+
+
+/**
+ * Get favorite parking spaces
+ */
+router.get("/favorite", passport.authenticate('jwt', {session: false}), (req, res) => {
+    User.findById(req.user._id).populate('favorites').exec((err, user) => {
+        if (err) return err;
+
+        return res.json({
+            favorites: user.favorites
+        })
+    });
+});
+
+/**
+ * Add favorite parking space
+ * @TODO: Remove the callbacks
+ */
+router.post("/favorite", passport.authenticate('jwt', {session: false}), (req, res) => {
+    ParkingSpace.findById(req.body.parkingSpace, (err, parkingSpace) => {
+        if (!parkingSpace) return res.status(400).json({error: 'No parking space chosen'});
+        User.findById(req.user._id, (err, user) => {
+            if (err) return err;
+            user.favorites.push(parkingSpace._id);
+            user.save(err => {
+                if (err) return err;
+                return res.json({
+                    result: 'success',
+                    favorites: user.favorites
+                })
+            });
+        });
+    });
+});
+
+/**
+ * Remove favorite parking space
+ */
+router.delete("/favorite", passport.authenticate('jwt', {session: false}), (req, res) => {
+        User.findById(req.user._id, (err, user) => {
+            if (err) return err;
+            user.favorites.pull(req.body.parkingSpace);
+            user.save(err => {
+                if (err) return err;
+                return res.json({
+                    result: 'success',
+                    favorites: user.favorites
+                })
+            });
+        });
 });
 
 module.exports = router;
