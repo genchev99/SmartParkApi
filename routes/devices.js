@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Device = require("../models/device");
+const ParkingSpace = require('../models/parkingSpace');
 
 const getDevices = options => {
     return new Promise(async (resolve, reject) => {
@@ -23,6 +24,21 @@ router.get("/", async (req, res) => {
 
 
 router.post('/', async (req, res) => {
+    const device = await Device.findOneById(req.body.id);
+    const parkingSpace = await ParkingSpace.findOneById(device.parkingSpace);
+    parkingSpace.available = !parkingSpace.available;
+    parkingSpace.save();
+    //parkingSpace.save();
+    /*const device = await Device.findOneAndUpdate({
+        _id: req.params.id
+    }, {
+        'device.parkingSpace.available': req.body.available
+    }, {});*/
+
+    return res.json(device);
+});
+
+router.put('/', async (req, res) => {
     const device = await Device.findOneAndUpdate({
         active: true,
         lastCharged: new Date()

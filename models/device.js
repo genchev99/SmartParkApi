@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const DeviceSchema = new Schema({
   active: { type: Boolean },
   lastCharged : { type: Date },
-  parkingSpace: { type: Schema.Types.ObjectId, ref: 'devices', unique: true }
+  parkingSpace: { type: Schema.Types.ObjectId, ref: 'parkingSpace', unique: true }
 }, { timestamps: true });
 
 

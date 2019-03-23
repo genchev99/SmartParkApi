@@ -10,6 +10,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const mongooseReplica = require("mongoose");
 const http = require("http");
+const middleware = require('socketio-wildcard')();
 
 const ParkingSpace = require("./models/parkingSpace");
 
@@ -28,6 +29,7 @@ const port = process.env.PORT || 4444;
 const server = http.createServer(socket);
 // This creates our socket using the instance of the server
 const io = socketIO(server);
+io.use(middleware);
 
 /* CORS setup */
 app.use(cors());
@@ -93,6 +95,25 @@ db.once('open', () => {
       ParkingSpace.find({}).then(docs => {
         io.sockets.emit("new-data", docs);
       });
+    });
+
+    socket.on('*', (data)=>{
+      console.log(data.data);
+      const obj = JSON.parse(data.data);
+      if (obj.initial) {
+        ParkingSpace.find({}).find({
+          "location": {
+            $near: {
+              $maxDistance: 5000,
+              $geometry: { type: 'Point', coordinates: [parseFloat(obj.lat), parseFloat(obj.lng)] }
+            }
+          }
+        })
+            .select('available location.coordinates _id')
+            .then(spaces => {
+          io.sockets.emit("initial", JSON.stringify(spaces));
+        });
+      }
     });
 
     // disconnect is fired when a client leaves the server

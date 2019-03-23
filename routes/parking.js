@@ -59,7 +59,17 @@ router.get("/free", async (req, res) => {
 router.post("/free", async (req, res) => {
     let distance = req.body.distance;
     if (!distance || distance <= 0) distance = 5000;
-    const query = ParkingSpace.find({}).populate('device');
+    const devices = await ParkingSpace.find({}).populate('device').find({
+        "device.location": {
+            $near: {
+                $maxDistance: distance,
+                $geometry: { type: 'Point', coordinates: [parseFloat(req.body.lat), parseFloat(req.body.long)] }
+            }
+        }
+    });
+
+    return res.json(devices);
+    /*const query = ParkingSpace.find({}).populate('device');
     query.where('location').near({
         center: {coordinates: [parseFloat(req.body.lat), parseFloat(req.body.long)], type: 'Point'},
         maxDistance: parseInt(distance)
@@ -70,7 +80,7 @@ router.post("/free", async (req, res) => {
         return res.json({
             spaces: spaces
         });
-    });
+    });*/
 
     /*const query = ParkingSpace.find(
         {

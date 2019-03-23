@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const ParkingSpaceSchema = new Schema({
     available: { type: Boolean },
-    device : { type: Schema.Types.ObjectId, ref: 'devices', unique: true },
+    //device : { type: Schema.Types.ObjectId, ref: 'devices', unique: true },
     location: {
         type: {
             type: String,
