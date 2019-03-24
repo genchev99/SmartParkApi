@@ -52,7 +52,7 @@ router.post('/login', async (req, res, next) => {
 /**
  * Get favorite parking spaces
  */
-router.get("/favorite", passport.authenticate('jwt', {session: false}), async (req, res) => {
+router.get("/favorites", passport.authenticate('jwt', {session: false}), async (req, res) => {
     const user = await User.findById(req.user._id).populate('favorites');
 
     return res.json({
@@ -63,7 +63,7 @@ router.get("/favorite", passport.authenticate('jwt', {session: false}), async (r
 /**
  * Add favorite parking space
  */
-router.post("/favorite", passport.authenticate('jwt', {session: false}), async (req, res) => {
+router.post("/favorites", passport.authenticate('jwt', {session: false}), async (req, res) => {
     const user = await User.findOneAndUpdate(
         {_id: req.user._id},
         {$addToSet: {favorites: req.body.parkingSpace}},
@@ -85,7 +85,7 @@ router.post("/favorite", passport.authenticate('jwt', {session: false}), async (
 /**
  * Remove favorite parking space
  */
-router.delete("/favorite", passport.authenticate('jwt', {session: false}), async (req, res) => {
+router.delete("/favorites", passport.authenticate('jwt', {session: false}), async (req, res) => {
     const user = await User.findOneAndUpdate(
         {_id: req.user._id},
         {$pull: {favorites: req.body.parkingSpace}},
