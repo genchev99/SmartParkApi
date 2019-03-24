@@ -133,7 +133,11 @@ db.once('open', () => {
     const changeStream = taskCollection.watch();
 
     changeStream.on('change', (change) => {
-        console.log(change);
+        ParkingSpace.find({}).select('available location.coordinates _id').then(spaces => {
+            io.sockets.emit("update", JSON.stringify(spaces));
+        });
+        //let obj = {'_id': change.documentKey._id, 'available': change.updateDescription.updatedFields.available};
+        //io.sockets.emit('update', change.updateDescription.updatedFields)
     });
 
     server.listen(port, () => console.log(`Socket server started on port ${port}`));
