@@ -118,7 +118,8 @@ db.once('open', () => {
                     "location": {
                         $near: {
                             $maxDistance: 5000,
-                            $geometry: {type: 'Point', coordinates: [parseFloat(obj.lat), parseFloat(obj.lng)]}
+                            $geometry: {type: 'Point', coordinates: [parseFloat(obj.data.location.coordinates[0]),
+                                    parseFloat(obj.data.location.coordinates[1])]}
                         }
                     }
                 })

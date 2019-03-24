@@ -54,10 +54,10 @@ router.post('/login', async (req, res, next) => {
  * Get favorite parking spaces
  */
 router.get("/favorites", passport.authenticate('jwt', {session: false}), async (req, res) => {
-    const user = await User.findById(req.user._id);
+    const favorites = await Favorite.find({user: req.user._id});
 
     return res.json({
-        favorites: user.favorites
+        favorites: favorites
     })
 });
 
@@ -65,36 +65,16 @@ router.get("/favorites", passport.authenticate('jwt', {session: false}), async (
  * Add favorite parking space
  */
 router.post("/favorites", passport.authenticate('jwt', {session: false}), async (req, res) => {
-    const favorite = await Favorite.findOneAndUpdate(
-        {user: req.user._id},
-        {parkingSpace: req.body.parkingSpace, name: req.body.name},
-        {new: true}
-    )
-        .populate('user')
-        .catch((err) => {
-        return res.json({
-            result: 'error'
-        })
+    const favorite = await Favorite.findOneAndUpdate({
+        user: req.user._id,
+        parkingSpace: req.body.parkingSpace,
+        name: req.body.name
+    }, {}, {
+        upsert: true,
+        new: true
     });
-    return res.json({
-        result: 'success',
-        favorites: favorite.user.favorites
-    });/*
-    const user = await User.findOneAndUpdate(
-        {_id: req.user._id},
-        {$addToSet: {favorites: req.body.parkingSpace}},
-        {new: true}
-    )
-        .populate('favorites')
-        .catch((err) => {
-            return res.json({
-                result: 'error'
-            })
-        });
-    return res.json({
-        result: 'success',
-        favorites: user.favorites
-    });*/
+
+    return res.json(favorite);
 });
 
 
@@ -104,32 +84,11 @@ router.post("/favorites", passport.authenticate('jwt', {session: false}), async 
 router.delete("/favorites", passport.authenticate('jwt', {session: false}), async (req, res) => {
     const favorite = await Favorite.deleteOne({
         _id: req.body.id
-    })
-        .populate('user')
-        .catch((err) => {
-            return res.json({
-                result: 'error'
-            })
-        });
-    return res.json({
-        result: 'success',
-        favorites: favorite.user.favorites
     });
-    /*const user = await User.findOneAndUpdate(
-        {_id: req.user._id},
-        {$pull: {favorites: req.body.parkingSpace}},
-        {new: true}
-    )
-        .populate('favorites')
-        .catch((err) => {
-            return res.json({
-                result: 'error'
-            })
-        });
+
     return res.json({
         result: 'success',
-        favorites: user.favorites
-    })*/
+    });
 });
 
 module.exports = router;
