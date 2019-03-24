@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const dotenv = require("dotenv").config();
 
 const User = require('../models/user');
+const Favorite = require('../models/favorite');
 
 
 /* GET users listing. */
@@ -53,7 +54,7 @@ router.post('/login', async (req, res, next) => {
  * Get favorite parking spaces
  */
 router.get("/favorites", passport.authenticate('jwt', {session: false}), async (req, res) => {
-    const user = await User.findById(req.user._id).populate('favorites');
+    const user = await User.findById(req.user._id);
 
     return res.json({
         favorites: user.favorites
@@ -64,6 +65,21 @@ router.get("/favorites", passport.authenticate('jwt', {session: false}), async (
  * Add favorite parking space
  */
 router.post("/favorites", passport.authenticate('jwt', {session: false}), async (req, res) => {
+    const favorite = await Favorite.findOneAndUpdate(
+        {user: req.user._id},
+        {parkingSpace: req.body.parkingSpace, name: req.body.name},
+        {new: true}
+    )
+        .populate('user')
+        .catch((err) => {
+        return res.json({
+            result: 'error'
+        })
+    });
+    return res.json({
+        result: 'success',
+        favorites: favorite.user.favorites
+    });/*
     const user = await User.findOneAndUpdate(
         {_id: req.user._id},
         {$addToSet: {favorites: req.body.parkingSpace}},
@@ -78,7 +94,7 @@ router.post("/favorites", passport.authenticate('jwt', {session: false}), async 
     return res.json({
         result: 'success',
         favorites: user.favorites
-    });
+    });*/
 });
 
 
@@ -86,7 +102,20 @@ router.post("/favorites", passport.authenticate('jwt', {session: false}), async 
  * Remove favorite parking space
  */
 router.delete("/favorites", passport.authenticate('jwt', {session: false}), async (req, res) => {
-    const user = await User.findOneAndUpdate(
+    const favorite = await Favorite.deleteOne({
+        _id: req.body.id
+    })
+        .populate('user')
+        .catch((err) => {
+            return res.json({
+                result: 'error'
+            })
+        });
+    return res.json({
+        result: 'success',
+        favorites: favorite.user.favorites
+    });
+    /*const user = await User.findOneAndUpdate(
         {_id: req.user._id},
         {$pull: {favorites: req.body.parkingSpace}},
         {new: true}
@@ -100,7 +129,7 @@ router.delete("/favorites", passport.authenticate('jwt', {session: false}), asyn
     return res.json({
         result: 'success',
         favorites: user.favorites
-    })
+    })*/
 });
 
 module.exports = router;

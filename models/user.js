@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const UserSchema = new Schema({
     email: {type: String, required: true, unique: true},
     password: {type: String, required: true},
-    favorites: [{type: Schema.Types.ObjectId, ref: 'parkingSpace'}]
+    favorites: [{type: Schema.Types.ObjectId, ref: 'favorites'}]
 }, {timestamps: true});
 
 UserSchema.pre('save', async function (next) {
