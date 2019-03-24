@@ -97,6 +97,7 @@ db.once('open', () => {
             });
         });
 
+        //@TODO: Refactor
         socket.on('*', (data) => {
             const obj = JSON.parse(data.data);
             if (obj.initial) {
@@ -111,6 +112,19 @@ db.once('open', () => {
                     .select('available location.coordinates _id')
                     .then(spaces => {
                         io.sockets.emit("initial", JSON.stringify(spaces));
+                    });
+            } else {
+                ParkingSpace.find({"available": true}).find({
+                    "location": {
+                        $near: {
+                            $maxDistance: 5000,
+                            $geometry: {type: 'Point', coordinates: [parseFloat(obj.lat), parseFloat(obj.lng)]}
+                        }
+                    }
+                })
+                    .select('available location.coordinates _id')
+                    .then(spaces => {
+                        io.sockets.emit("reroute", JSON.stringify(spaces[0]));
                     });
             }
         });
