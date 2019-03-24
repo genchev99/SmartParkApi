@@ -117,11 +117,7 @@ db.once('open', () => {
 
         // disconnect is fired when a client leaves the server
         socket.on("disconnect", () => {
-            ParkingSpace.find({})
-                .select('available location.coordinates _id')
-                .then(spaces => {
-                    io.sockets.emit("update", JSON.stringify(spaces));
-                });
+
         });
     });
     console.log("Started");
