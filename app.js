@@ -34,16 +34,16 @@ io.use(middleware);
 /* CORS setup */
 app.use(cors());
 
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  next();
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    next();
 });
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-mongoose.connect(process.env.MONGO_DATABASE_URL, { useNewUrlParser: true });
+mongoose.connect(process.env.MONGO_DATABASE_URL, {useNewUrlParser: true});
 mongoose.Promise = global.Promise;
 
 // view engine setup
@@ -52,7 +52,7 @@ app.set('view engine', 'pug');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -65,75 +65,78 @@ app.use('/devices', devicesRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
-  next(createError(404));
+    next(createError(404));
 });
 
 // error handler
 app.use((err, req, res) => {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+    // set locals, only providing error in development
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+    // render the error page
+    res.status(err.status || 500);
+    res.render('error');
 });
 
-mongooseReplica.connect("mongodb://localhost/smartpark?replicaSet=rs", { useNewUrlParser: true });
+mongooseReplica.connect("mongodb://localhost/smartpark?replicaSet=rs", {useNewUrlParser: true});
 
 const db = mongooseReplica.connection;
 
 db.on('error', console.error.bind(console, 'Connection Error:'));
 
 db.once('open', () => {
-  io.on("connection", socket => {
-    console.log("New client connected" + socket.id);
-    //console.log(socket);
-    // collection_devices.watch().on('change', change => console.log(change));
-    // Returning all initial states of data
-    socket.on("initial-data", () => {
-      ParkingSpace.find({}).then(docs => {
-        io.sockets.emit("new-data", docs);
-      });
-    });
-
-    socket.on('*', (data)=>{
-      console.log(data.data);
-      const obj = JSON.parse(data.data);
-      if (obj.initial) {
-        ParkingSpace.find({}).find({
-          "location": {
-            $near: {
-              $maxDistance: 5000,
-              $geometry: { type: 'Point', coordinates: [parseFloat(obj.lat), parseFloat(obj.lng)] }
-            }
-          }
-        })
-            .select('available location.coordinates _id')
-            .then(spaces => {
-          io.sockets.emit("initial", JSON.stringify(spaces));
+    io.on("connection", socket => {
+        console.log("New client connected" + socket.id);
+        //console.log(socket);
+        // collection_devices.watch().on('change', change => console.log(change));
+        // Returning all initial states of data
+        socket.on("initial-data", () => {
+            ParkingSpace.find({}).then(docs => {
+                io.sockets.emit("new-data", docs);
+            });
         });
-      }
+
+        socket.on('*', (data) => {
+            const obj = JSON.parse(data.data);
+            if (obj.initial) {
+                ParkingSpace.find({}).find({
+                    "location": {
+                        $near: {
+                            $maxDistance: 5000,
+                            $geometry: {type: 'Point', coordinates: [parseFloat(obj.lat), parseFloat(obj.lng)]}
+                        }
+                    }
+                })
+                    .select('available location.coordinates _id')
+                    .then(spaces => {
+                        io.sockets.emit("initial", JSON.stringify(spaces));
+                    });
+            }
+        });
+
+        // disconnect is fired when a client leaves the server
+        socket.on("disconnect", () => {
+            ParkingSpace.find({})
+                .select('available location.coordinates _id')
+                .then(spaces => {
+                    io.sockets.emit("update", JSON.stringify(spaces));
+                });
+        });
+    });
+    console.log("Started");
+    app.listen(8080, () => {
+        console.log('Node server running on port 8080');
     });
 
-    // disconnect is fired when a client leaves the server
-    socket.on("disconnect", () => {
-      console.log("user disconnected");
+    const taskCollection = db.collection('parkingspaces');
+    const changeStream = taskCollection.watch();
+
+    changeStream.on('change', (change) => {
+        console.log(change);
     });
-  });
-  console.log("Started");
-  app.listen(8080, () => {
-    console.log('Node server running on port 8080');
-  });
 
-  const taskCollection = db.collection('parkingspaces');
-  const changeStream = taskCollection.watch();
-
-  changeStream.on('change', (change) => {
-    console.log(change);
-  });
-
-  server.listen(port, () => console.log(`Socket server started on port ${port}`));
+    server.listen(port, () => console.log(`Socket server started on port ${port}`));
 });
 
-// module.exports = app;
+module.exports = app;

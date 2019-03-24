@@ -24,22 +24,17 @@ router.get("/", async (req, res) => {
 
 
 router.post('/', async (req, res) => {
-    const device = await Device.findOneById(req.body.id);
-    const parkingSpace = await ParkingSpace.findOneById(device.parkingSpace);
+    const device = await Device.findById(req.body.id);
+    const parkingSpace = await ParkingSpace.findById(device.parkingSpace);
     parkingSpace.available = !parkingSpace.available;
     parkingSpace.save();
-    //parkingSpace.save();
-    /*const device = await Device.findOneAndUpdate({
-        _id: req.params.id
-    }, {
-        'device.parkingSpace.available': req.body.available
-    }, {});*/
 
     return res.json(device);
 });
 
 router.put('/', async (req, res) => {
     const device = await Device.findOneAndUpdate({
+        parkingSpace: req.body.parking.toString(),
         active: true,
         lastCharged: new Date()
     }, {}, {

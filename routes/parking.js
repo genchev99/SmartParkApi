@@ -9,24 +9,18 @@ const Device = require('../models/device');
  * Creates new parking space
  */
 router.post('/', async (req, res) => {
-    let space = await new ParkingSpace({
-        available: true,
+    let space = await ParkingSpace.findOneAndUpdate({
+        available: false,
         location: {
             type: 'Point',
-            coordinates: [42.710397, 23.321969]
-        },
-    })
-        .save()
-        .catch((err) => {
-            res.json({
-                result: 'error'
-            })
-        });
+            coordinates: [parseFloat(req.body.lat), parseFloat(req.body.long)]
+        }
+    },{}, {upsert:true, new: true});
 
-        return res.json({
-            result: 'success',
-            parkingSpace: space
-        })
+    return res.json({
+        result: 'success',
+        parkingSpace: space
+    })
 });
 
 
@@ -59,8 +53,8 @@ router.get("/free", async (req, res) => {
 router.post("/free", async (req, res) => {
     let distance = req.body.distance;
     if (!distance || distance <= 0) distance = 5000;
-    const devices = await ParkingSpace.find({}).populate('device').find({
-        "device.location": {
+    const devices = await ParkingSpace.find({}).find({
+        "location": {
             $near: {
                 $maxDistance: distance,
                 $geometry: { type: 'Point', coordinates: [parseFloat(req.body.lat), parseFloat(req.body.long)] }
